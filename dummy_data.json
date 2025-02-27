@@ -1,0 +1,80 @@
+[ 
+    {
+      "id": "17140ef3-39f9-4fce-a127-067616d4871e",
+      "first_name": "Mark",
+      "phone_number": "123-456-7890",
+      "created_at": "2025-02-27 01:06:27+00",
+      "last_name": "Nudelman",
+      "bio": "Just another software engineer here on this platform",
+      "school": "Boston University",
+      "height_feet": 6,
+      "height_inches": 0,
+      "age": 25,
+      "occupation": "Software Engineer"
+    },
+    {
+      "id": "41cbf213-ce41-4c2e-ad0e-014d4b3a58b7",
+      "first_name": "Anna",
+      "phone_number": "234-5678-8901",
+      "created_at": "2025-02-27 01:10:42+00",
+      "last_name": "Blinker",
+      "bio": "Looking for something serious!",
+      "school": "Cornell",
+      "height_feet": 5,
+      "height_inches": 5,
+      "age": 27,
+      "occupation": "Graphic Designer"
+    },
+    {
+      "id": "45db28c3-3f9a-463a-82d4-d2cd334d0785",
+      "first_name": "Jake",
+      "phone_number": "345-678-9012",
+      "created_at": "2025-02-27 01:12:25+00",
+      "last_name": "Movitz",
+      "bio": "Working at my father's real estate firm",
+      "school": "Brandeis",
+      "height_feet": 5,
+      "height_inches": 11,
+      "age": 29,
+      "occupation": "Real Estate Development Analyst"
+    },
+    {
+      "id": "900ae6e0-190e-46d6-82f2-81189c1780cf",
+      "first_name": "Rachel",
+      "phone_number": "456-789-0123",
+      "created_at": "2025-02-27 01:13:53+00",
+      "last_name": "Magnolia",
+      "bio": "moving to Dubai soon!",
+      "school": "Princeton",
+      "height_feet": 5,
+      "height_inches": 7,
+      "age": 24,
+      "occupation": "VC Investor"
+    },
+    {
+      "id": "a3246d58-90cb-4306-b905-26809cffce61",
+      "first_name": "Angela",
+      "phone_number": "567-890-1234",
+      "created_at": "2025-02-27 01:15:00+00",
+      "last_name": "Bong",
+      "bio": "no longer an actuary!",
+      "school": "Syracuse",
+      "height_feet": 5,
+      "height_inches": 4,
+      "age": 26,
+      "occupation": "Data Scientist"
+    },
+    {
+      "id": "c5136cfa-1bee-4481-8bc7-cc89bdcdf330",
+      "first_name": "Ben",
+      "phone_number": "678-901-2345",
+      "created_at": "2025-02-27 01:16:24+00",
+      "last_name": "Dolson",
+      "bio": "Just a frat dude turned into finance bro",
+      "school": "Cornell",
+      "height_feet": 6,
+      "height_inches": 1,
+      "age": 23,
+      "occupation": "Hedge Fund Analyst"
+    }
+  ]

@@ -10,6 +10,8 @@ import { modalStyles } from '@/styles/modal';
 import { arrangedMatchesStyles } from '@/styles/arrangedMatches';
 import { getMyMatches } from '@/lib/api';
 import { Match } from '@/types/database';
+import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 // Update arranged matches data with more examples
 const arrangedMatchesData = [
@@ -139,11 +141,24 @@ const ArrangedMatchTicket = ({ person1, person2, status, date }: ArrangedMatchTi
   );
 };
 
+// Add these interfaces
+interface Contact {
+  name: string;
+  phoneNumber: string;
+  userId?: string;
+  photoUrl?: string;
+  exists: boolean;
+}
+
 export default function SetUpScreen() {
+  const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedContacts, setSelectedContacts] = useState<{[key: string]: string}>({
-    contact1: '',
-    contact2: '',
+  const [selectedContacts, setSelectedContacts] = useState<{
+    contact1: Contact | null;
+    contact2: Contact | null;
+  }>({
+    contact1: null,
+    contact2: null,
   });
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,10 +174,17 @@ export default function SetUpScreen() {
         if (data.length > 0) {
           const contact = data[0];
           const phoneNumber = contact.phoneNumbers?.[0]?.number;
+          const name = contact.name || 'Unknown';
+          
           if (phoneNumber) {
+            // Create a new contact object
             setSelectedContacts(prev => ({
               ...prev,
-              [contactKey]: phoneNumber
+              [contactKey]: {
+                name,
+                phoneNumber,
+                exists: false // Will be updated after checking
+              }
             }));
           } else {
             Alert.alert('Error', 'Selected contact has no phone number');
@@ -173,6 +195,78 @@ export default function SetUpScreen() {
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to access contacts');
+    }
+  };
+
+  // Add this function to check if users exist
+  const checkUsersExist = async () => {
+    if (!selectedContacts.contact1 || !selectedContacts.contact2) {
+      return false;
+    }
+
+    try {
+      // Check first contact
+      const { data: user1Data, error: user1Error } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .eq('phone_number', selectedContacts.contact1.phoneNumber)
+        .single();
+
+      if (user1Error && user1Error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error("Error checking user 1:", user1Error);
+        return false;
+      }
+
+      // Check second contact
+      const { data: user2Data, error: user2Error } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .eq('phone_number', selectedContacts.contact2.phoneNumber)
+        .single();
+
+      if (user2Error && user2Error.code !== 'PGRST116') {
+        console.error("Error checking user 2:", user2Error);
+        return false;
+      }
+
+      // Update contact1 with user data if found
+      if (user1Data) {
+        const photoUrl = supabase.storage
+          .from('user-images')
+          .getPublicUrl(`${user1Data.id}/1.png`).data.publicUrl;
+
+        setSelectedContacts(prev => ({
+          ...prev,
+          contact1: {
+            ...prev.contact1!,
+            userId: user1Data.id,
+            photoUrl,
+            exists: true
+          }
+        }));
+      }
+
+      // Update contact2 with user data if found
+      if (user2Data) {
+        const photoUrl = supabase.storage
+          .from('user-images')
+          .getPublicUrl(`${user2Data.id}/1.png`).data.publicUrl;
+
+        setSelectedContacts(prev => ({
+          ...prev,
+          contact2: {
+            ...prev.contact2!,
+            userId: user2Data.id,
+            photoUrl,
+            exists: true
+          }
+        }));
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error checking users:", error);
+      return false;
     }
   };
 
@@ -210,25 +304,7 @@ export default function SetUpScreen() {
         style={commonStyles.content}
         contentContainerStyle={commonStyles.contentContainer}
       >
-        {loading ? (
-          <Text style={arrangedMatchesStyles.loadingText}>Loading matches...</Text>
-        ) : (
-          matches.map(match => (
-            <ArrangedMatchTicket
-              key={match.id}
-              person1={{
-                name: `${match.person1.first_name} ${match.person1.last_name}`,
-                photoUrl: 'https://picsum.photos/200',
-              }}
-              person2={{
-                name: `${match.person2.first_name} ${match.person2.last_name}`,
-                photoUrl: 'https://picsum.photos/201',
-              }}
-              status={match.response_person1 || 'pending'}
-              date={match.created_at}
-            />
-          ))
-        )}
+        {/* ... existing matches list ... */}
       </ScrollView>
 
       <TouchableOpacity 
@@ -236,7 +312,7 @@ export default function SetUpScreen() {
         onPress={() => setIsModalVisible(true)}
       >
         <IconSymbol name="plus" size={24} color="#ffffff" />
-        <Text style={setupStyles.floatingButtonText}>make a match</Text>
+        <Text style={setupStyles.floatingButtonText}>Make A Match</Text>
       </TouchableOpacity>
 
       <Modal
@@ -246,68 +322,162 @@ export default function SetUpScreen() {
         onRequestClose={() => setIsModalVisible(false)}
       >
         <View style={modalStyles.container}>
-          <View style={modalStyles.modalHeader}>
-            <Text style={modalStyles.modalTitle}>Set Up</Text>
-            <Text style={modalStyles.modalDescription}>make a match</Text>
-          </View>
+          <Image
+            source={require('@/assets/images/hearts_background_2.png')}
+            style={modalStyles.backgroundImage}
+          />
+          <View style={modalStyles.whiteOverlay} />
+          <View style={modalStyles.content}>
+            <View style={modalStyles.modalHeader}>
+              <Text style={modalStyles.modalTitle}>Make a Match</Text>
+            </View>
 
-          <View style={modalStyles.contactsContainer}>
-            <TouchableOpacity 
-              style={modalStyles.contactBox}
-              onPress={() => pickContact('contact1')}
-            >
-              {selectedContacts.contact1 ? (
-                <View style={modalStyles.selectedContact}>
-                  <IconSymbol name="person.fill" size={30} color="#666666" />
-                  <Text style={modalStyles.contactText} numberOfLines={1}>
-                    {selectedContacts.contact1}
-                  </Text>
+            <View style={modalStyles.contactsContainer}>
+              <TouchableOpacity onPress={() => pickContact('contact1')}>
+                <View style={modalStyles.contactBox}>
+                  <LinearGradient
+                    colors={['rgba(255, 215, 0, 0.4)', 'rgba(255, 247, 230, 0.15)']}
+                    style={modalStyles.contactBoxGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                  <View style={modalStyles.contactBoxContent}>
+                    {selectedContacts.contact1 ? (
+                      <>
+                        {selectedContacts.contact1.photoUrl ? (
+                          <Image 
+                            source={{ uri: selectedContacts.contact1.photoUrl }} 
+                            style={modalStyles.contactImage} 
+                          />
+                        ) : (
+                          <IconSymbol 
+                            name="person.circle.fill" 
+                            size={40} 
+                            color="#666666" 
+                          />
+                        )}
+                        <Text style={modalStyles.contactBoxText}>
+                          {selectedContacts.contact1.name}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <IconSymbol 
+                          name="plus" 
+                          size={24} 
+                          color="#666666" 
+                          style={modalStyles.plusIcon}
+                        />
+                        <Text style={modalStyles.contactBoxText}>
+                          Select Friend
+                        </Text>
+                      </>
+                    )}
+                  </View>
                 </View>
-              ) : (
-                <>
-                  <IconSymbol name="plus" size={40} color="#666666" />
-                  <Text style={modalStyles.contactText}>add contact</Text>
-                </>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={modalStyles.contactBox}
-              onPress={() => pickContact('contact2')}
-            >
-              {selectedContacts.contact2 ? (
-                <View style={modalStyles.selectedContact}>
-                  <IconSymbol name="person.fill" size={30} color="#666666" />
-                  <Text style={modalStyles.contactText} numberOfLines={1}>
-                    {selectedContacts.contact2}
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <IconSymbol name="plus" size={40} color="#666666" />
-                  <Text style={modalStyles.contactText}>add contact</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <View style={modalStyles.buttonContainer}>
-            <LinearGradient
-              colors={['#E0FFFF', '#B0E0E6']}
-              style={modalStyles.matchButton}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <TouchableOpacity 
-                style={modalStyles.matchButtonContent}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text style={modalStyles.matchButtonText}>make match</Text>
               </TouchableOpacity>
-            </LinearGradient>
-            <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-              <Text style={modalStyles.anonymousText}>match anonymously</Text>
-            </TouchableOpacity>
+
+              {/* <IconSymbol name="heart" size={24} color="#666666" /> */}
+
+              <TouchableOpacity onPress={() => pickContact('contact2')}>
+                <View style={modalStyles.contactBox}>
+                  <LinearGradient
+                    colors={['rgba(255, 215, 0, 0.5)', 'rgba(255, 247, 230, 0.15)']}
+                    style={modalStyles.contactBoxGradient}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 1, y: 0 }}
+                  />
+                  <View style={modalStyles.contactBoxContent}>
+                    <IconSymbol 
+                      name="plus" 
+                      size={24} 
+                      color="#666666" 
+                      style={modalStyles.plusIcon}
+                    />
+                    <Text style={modalStyles.contactBoxText}>
+                      {selectedContacts.contact2?.name || 'Select Friend'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={modalStyles.buttonContainer}>
+              <LinearGradient
+                colors={['rgba(255, 215, 0, 0.5)', 'rgba(255, 236, 179, 0.95)']}
+                style={modalStyles.matchButton}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <TouchableOpacity 
+                  style={modalStyles.matchButtonContent}
+                  onPress={async () => {
+                    if (!selectedContacts.contact1 || !selectedContacts.contact2) {
+                      Alert.alert('Select Contacts', 'Please select both contacts to make a match');
+                      return;
+                    }
+                    
+                    // Show loading indicator
+                    setLoading(true);
+                    
+                    try {
+                      // Check if users exist in the system
+                      const usersChecked = await checkUsersExist();
+                      
+                      if (usersChecked) {
+                        // Create the match in the database
+                        if (selectedContacts.contact1.exists && selectedContacts.contact2.exists) {
+                          // Both users exist, create match with user IDs
+                          const { error } = await supabase
+                            .from('matches')
+                            .insert({
+                              matcher_id: 'current-user-id', // Your user ID
+                              person1_id: selectedContacts.contact1.userId,
+                              person2_id: selectedContacts.contact2.userId,
+                              status: 'pending'
+                            });
+                            
+                          if (error) {
+                            console.error("Error creating match:", error);
+                            Alert.alert('Error', 'Failed to create match');
+                          } else {
+                            Alert.alert('Success', 'Match created successfully!');
+                            setIsModalVisible(false);
+                          }
+                        } else {
+                          // One or both users don't exist
+                          Alert.alert(
+                            'New Users',
+                            'One or both contacts are not registered users. Would you like to invite them?',
+                            [
+                              {
+                                text: 'Cancel',
+                                style: 'cancel'
+                              },
+                              {
+                                text: 'Invite',
+                                onPress: () => {
+                                  // Handle invitation logic
+                                  // This could send SMS invites
+                                  setIsModalVisible(false);
+                                }
+                              }
+                            ]
+                          );
+                        }
+                      }
+                    } catch (error) {
+                      console.error("Error in match process:", error);
+                      Alert.alert('Error', 'Something went wrong');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  <Text style={modalStyles.matchButtonText}>Set Them Up</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
           </View>
         </View>
       </Modal>

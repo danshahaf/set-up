@@ -19,31 +19,9 @@ export const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#000000',
     },
-    filterContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: 20,
-        gap: 12,
-        marginBottom: 24,
-    },
-    filterButton: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-        backgroundColor: '#f0f0f0',
-    },
-    filterButtonActive: {
-        backgroundColor: '#000000',
-    },
-    filterText: {
-        fontFamily: 'Nunito',
-        fontSize: 14,
-        color: '#666666',
-    },
-    filterTextActive: {
-        color: '#ffffff',
-    },
     leaderboardContainer: {
         paddingHorizontal: 20,
+        marginBottom: 80,
     },
     leaderboardRow: {
         flexDirection: 'row',
@@ -76,5 +54,71 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#000000',
+    },
+    profileImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 12,
+    },
+    matchCountContainer: {
+        alignItems: 'center',
+    },
+    matchCount: {
+        fontFamily: 'Nunito',
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#000000',
+    },
+    matchLabel: {
+        fontFamily: 'Nunito',
+        fontSize: 12,
+        color: '#666666',
+    },
+    statsWidget: {
+        position: 'absolute',
+        bottom: 90,
+        left: 20,
+        right: 20,
+        borderRadius: 150,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    statsContent: {
+        paddingVertical: 16,
+        paddingHorizontal: 40,
+    },
+    statsTitle: {
+        fontFamily: 'Nunito',
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#000000',
+        marginBottom: 16,
+    },
+    statsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    statItem: {
+        alignItems: 'center',
+    },
+    statValue: {
+        fontFamily: 'Poppins',
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#000000',
+        letterSpacing: 0.5,
+    },
+    statLabel: {
+        fontFamily: 'Nunito',
+        fontSize: 12,
+        color: '#666666',
     },
 }); 

@@ -6,12 +6,22 @@ const photoSize = (width - 50) / 2; // Account for padding and gap
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
+  },
+  fixedHeader: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  scrollContent: {
+    flex: 1,
+    paddingHorizontal: 20,
   },
   topSection: {
     alignItems: 'flex-start',
-    marginTop: 60,
   },
   nameContainer: {
     flexDirection: 'row',
@@ -102,15 +112,15 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
   statNumber: {
-    fontFamily: 'Nunito',
+    fontFamily: 'Poppins',
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#000000',
     marginBottom: 4,
   },
   statLabel: {
     fontFamily: 'Nunito',
-    fontSize: 12,
+    fontSize: 10,
     color: '#000000',
     textAlign: 'center',
   },
